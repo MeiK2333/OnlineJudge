@@ -1,6 +1,7 @@
 import io
 
 import xlsxwriter
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.timezone import now
 from django.core.cache import cache
@@ -29,6 +30,9 @@ class ContestAnnouncementListAPI(APIView):
         max_id = request.GET.get("max_id")
         if max_id:
             data = data.filter(id__gt=max_id)
+
+        keyword = request.GET.get("keyword", "").strip()
+        data = data.filter(Q(title__icontains=keyword))
         return self.success(ContestAnnouncementSerializer(data, many=True).data)
 
 
