@@ -1,7 +1,6 @@
 from django import forms
 
 from utils.api import serializers, UsernameSerializer
-
 from .models import AdminType, ProblemPermission, User, UserProfile
 
 
@@ -89,9 +88,10 @@ class EditUserSerializer(serializers.Serializer):
     real_name = serializers.CharField(max_length=32, allow_blank=True, allow_null=True)
     password = serializers.CharField(min_length=6, allow_blank=True, required=False, default=None)
     email = serializers.EmailField(max_length=64)
-    admin_type = serializers.ChoiceField(choices=(AdminType.REGULAR_USER, AdminType.ADMIN, AdminType.SUPER_ADMIN))
+    admin_type = serializers.ChoiceField(
+        choices=(AdminType.REGULAR_USER, AdminType.ADMIN, AdminType.SUPER_ADMIN, AdminType.SECONDARY_USER))
     problem_permission = serializers.ChoiceField(choices=(ProblemPermission.NONE, ProblemPermission.OWN,
-                                                          ProblemPermission.ALL))
+                                                          ProblemPermission.ALL, ProblemPermission.UPDATE_ONLY))
     open_api = serializers.BooleanField()
     two_factor_auth = serializers.BooleanField()
     is_disabled = serializers.BooleanField()

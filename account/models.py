@@ -8,12 +8,15 @@ class AdminType(object):
     REGULAR_USER = "Regular User"
     ADMIN = "Admin"
     SUPER_ADMIN = "Super Admin"
+    SECONDARY_USER = "二级用户"
 
 
 class ProblemPermission(object):
     NONE = "None"
     OWN = "Own"
     ALL = "All"
+    # 仅可以新增或更新题目，不可以删除题目
+    UPDATE_ONLY = "UPDATE_ONLY"
 
 
 class UserManager(models.Manager):
@@ -54,7 +57,7 @@ class User(AbstractBaseUser):
         return self.admin_type == AdminType.SUPER_ADMIN
 
     def is_admin_role(self):
-        return self.admin_type in [AdminType.ADMIN, AdminType.SUPER_ADMIN]
+        return self.admin_type in [AdminType.ADMIN, AdminType.SUPER_ADMIN, AdminType.SECONDARY_USER]
 
     def can_mgmt_all_problem(self):
         return self.problem_permission == ProblemPermission.ALL

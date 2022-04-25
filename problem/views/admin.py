@@ -11,7 +11,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import StreamingHttpResponse, FileResponse
 
-from account.decorators import problem_permission_required, ensure_created_by
+from account.decorators import problem_permission_required, ensure_created_by, problem_delete_permission_required
 from contest.models import Contest, ContestStatus
 from fps.parser import FPSHelper, FPSParser
 from judge.dispatcher import SPJCompiler
@@ -290,7 +290,7 @@ class ProblemAPI(ProblemBase):
 
         return self.success()
 
-    @problem_permission_required
+    @problem_delete_permission_required
     def delete(self, request):
         id = request.GET.get("id")
         if not id:

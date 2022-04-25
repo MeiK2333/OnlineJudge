@@ -59,6 +59,17 @@ class problem_permission_required(admin_role_required):
         return True
 
 
+class problem_delete_permission_required(admin_role_required):
+    def check_permission(self):
+        if not super(problem_delete_permission_required, self).check_permission():
+            return False
+        if self.request.user.problem_permission == ProblemPermission.NONE:
+            return False
+        if self.request.user.problem_permission == ProblemPermission.UPDATE_ONLY:
+            return False
+        return True
+
+
 def check_contest_password(password, contest_password):
     if not (password and contest_password):
         return False
