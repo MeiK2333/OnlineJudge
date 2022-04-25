@@ -53,7 +53,8 @@ class UserAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email", "admin_type", "problem_permission", "real_name",
-                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "invalid_date"]
+                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "invalid_date",
+                  "create_user_number", "create_user_number_limit"]
 
     def get_real_name(self, obj):
         return obj.userprofile.real_name
@@ -63,7 +64,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email", "admin_type", "problem_permission",
-                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "invalid_date"]
+                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "invalid_date",
+                  "create_user_number", "create_user_number_limit"]
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -96,6 +98,8 @@ class EditUserSerializer(serializers.Serializer):
     two_factor_auth = serializers.BooleanField()
     is_disabled = serializers.BooleanField()
     invalid_date = serializers.DateTimeField(allow_null=True)
+    create_user_number = serializers.IntegerField()
+    create_user_number_limit = serializers.IntegerField()
 
 
 class EditUserProfileSerializer(serializers.Serializer):

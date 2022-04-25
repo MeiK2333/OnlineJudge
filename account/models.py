@@ -48,6 +48,10 @@ class User(AbstractBaseUser):
     # 用户失效时间，账号到期后将无法登陆
     invalid_date = models.DateTimeField(null=True)
 
+    # 创建账号数量限制
+    create_user_number = models.IntegerField(default=0)
+    create_user_number_limit = models.IntegerField(default=0)
+
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
 

@@ -1,16 +1,15 @@
 import os
 import re
-import xlsxwriter
 
+import xlsxwriter
+from django.contrib.auth.hashers import make_password
 from django.db import transaction, IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
-from django.contrib.auth.hashers import make_password
 
 from submission.models import Submission
 from utils.api import APIView, validate_serializer
 from utils.shortcuts import rand_str
-
 from ..decorators import super_admin_required, super_admin_or_secondary_required
 from ..models import AdminType, ProblemPermission, User, UserProfile
 from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer
@@ -32,10 +31,18 @@ class UserAdminAPI(APIView):
                 return self.error(f"Error occurred while processing data '{user_data}'")
             user_list.append(User(username=user_data[0], password=make_password(user_data[1]), email=user_data[2]))
 
+        user_number = len(user_list)
+        if request.user.is_secondary_admin() and request.user.create_user_number_limit is not None:
+            if request.user.create_user_number + user_number > request.user.create_user_number_limit:
+                return self.error(
+                    f"创建账号数量超过上限，已有 {request.user.create_user_number}，限制 {request.user.create_user_number_limit}")
+
         try:
             with transaction.atomic():
                 ret = User.objects.bulk_create(user_list)
                 UserProfile.objects.bulk_create([UserProfile(user=ret[i], real_name=data[i][3]) for i in range(len(ret))])
+            request.user.create_user_number += user_number
+            request.user.save()
             return self.success()
         except IntegrityError as e:
             # Extract detail from exception message
@@ -68,6 +75,7 @@ class UserAdminAPI(APIView):
         user.admin_type = data["admin_type"]
         user.is_disabled = data["is_disabled"]
         user.invalid_date = data["invalid_date"]
+        user.create_user_number_limit = data["create_user_number_limit"]
 
         if data["admin_type"] == AdminType.ADMIN:
             user.problem_permission = data["problem_permission"]
