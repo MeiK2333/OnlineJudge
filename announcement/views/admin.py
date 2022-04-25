@@ -1,4 +1,4 @@
-from account.decorators import super_admin_required
+from account.decorators import super_admin_required, super_admin_or_secondary_required
 from utils.api import APIView, validate_serializer
 
 from announcement.models import Announcement
@@ -8,7 +8,7 @@ from announcement.serializers import (AnnouncementSerializer, CreateAnnouncement
 
 class AnnouncementAdminAPI(APIView):
     @validate_serializer(CreateAnnouncementSerializer)
-    @super_admin_required
+    @super_admin_or_secondary_required
     def post(self, request):
         """
         publish announcement
@@ -38,7 +38,7 @@ class AnnouncementAdminAPI(APIView):
 
         return self.success(AnnouncementSerializer(announcement).data)
 
-    @super_admin_required
+    @super_admin_or_secondary_required
     def get(self, request):
         """
         get announcement list / get one announcement

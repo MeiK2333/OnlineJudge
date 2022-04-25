@@ -11,7 +11,7 @@ from submission.models import Submission
 from utils.api import APIView, validate_serializer
 from utils.shortcuts import rand_str
 
-from ..decorators import super_admin_required
+from ..decorators import super_admin_required, super_admin_or_secondary_required
 from ..models import AdminType, ProblemPermission, User, UserProfile
 from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer
 from ..serializers import ImportUserSeralizer
@@ -19,7 +19,7 @@ from ..serializers import ImportUserSeralizer
 
 class UserAdminAPI(APIView):
     @validate_serializer(ImportUserSeralizer)
-    @super_admin_required
+    @super_admin_or_secondary_required
     def post(self, request):
         """
         Import User
@@ -44,7 +44,7 @@ class UserAdminAPI(APIView):
             return self.error(str(e).split("\n")[1])
 
     @validate_serializer(EditUserSerializer)
-    @super_admin_required
+    @super_admin_or_secondary_required
     def put(self, request):
         """
         Edit user api
@@ -59,6 +59,9 @@ class UserAdminAPI(APIView):
         if User.objects.filter(email=data["email"].lower()).exclude(id=user.id).exists():
             return self.error("Email already exists")
 
+        if request.user.admin_type == AdminType.SECONDARY_USER:
+            if data["admin_type"] != AdminType.REGULAR_USER:
+                return self.error("仅能创建或更新普通用户")
         pre_username = user.username
         user.username = data["username"].lower()
         user.email = data["email"].lower()
@@ -102,7 +105,7 @@ class UserAdminAPI(APIView):
         UserProfile.objects.filter(user=user).update(real_name=data["real_name"])
         return self.success(UserAdminSerializer(user).data)
 
-    @super_admin_required
+    @super_admin_or_secondary_required
     def get(self, request):
         """
         User list api / Get user by id

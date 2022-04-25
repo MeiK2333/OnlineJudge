@@ -59,6 +59,9 @@ class User(AbstractBaseUser):
     def is_super_admin(self):
         return self.admin_type == AdminType.SUPER_ADMIN
 
+    def is_secondary_admin(self):
+        return self.admin_type == AdminType.SECONDARY_USER
+
     def is_admin_role(self):
         return self.admin_type in [AdminType.ADMIN, AdminType.SUPER_ADMIN, AdminType.SECONDARY_USER]
 
