@@ -168,6 +168,11 @@ class UserLoginAPI(APIView):
             if user.invalid_date is not None and user.invalid_date < timezone.now():
                 return self.error("Your account has been invalid")
             if not user.two_factor_auth:
+                # 登录前移除其他登录状态
+                for session_key in user.session_keys:
+                    request.session.delete(session_key)
+                user.session_keys = []
+                user.save()
                 auth.login(request, user)
                 return self.success("Succeeded")
 
@@ -176,6 +181,10 @@ class UserLoginAPI(APIView):
                 return self.error("tfa_required")
 
             if OtpAuth(user.tfa_token).valid_totp(data["tfa_code"]):
+                for session_key in user.session_keys:
+                    request.session.delete(session_key)
+                user.session_keys = []
+                user.save()
                 auth.login(request, user)
                 return self.success("Succeeded")
             else:
