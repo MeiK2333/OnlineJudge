@@ -6,6 +6,7 @@ import qrcode
 from django.conf import settings
 from django.contrib import auth
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
@@ -164,6 +165,8 @@ class UserLoginAPI(APIView):
         if user:
             if user.is_disabled:
                 return self.error("Your account has been disabled")
+            if user.invalid_date is not None and user.invalid_date < timezone.now():
+                return self.error("Your account has been invalid")
             if not user.two_factor_auth:
                 auth.login(request, user)
                 return self.success("Succeeded")

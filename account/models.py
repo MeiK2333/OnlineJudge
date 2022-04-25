@@ -45,6 +45,9 @@ class User(AbstractBaseUser):
     open_api_appkey = models.TextField(null=True)
     is_disabled = models.BooleanField(default=False)
 
+    # 用户失效时间，账号到期后将无法登陆
+    invalid_date = models.DateTimeField(null=True)
+
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
 
