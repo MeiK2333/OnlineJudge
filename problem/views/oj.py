@@ -2,8 +2,8 @@ import random
 from django.db.models import Q, Count
 from utils.api import APIView
 from account.decorators import check_contest_permission
-from ..models import ProblemTag, Problem, ProblemRuleType
-from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer
+from ..models import ProblemTag, Problem, ProblemRuleType, ProblemAnswer
+from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, ProblemAnswerSerializer
 from contest.models import ContestRuleType
 
 
@@ -118,3 +118,13 @@ class ContestProblemAPI(APIView):
         else:
             data = ProblemSafeSerializer(contest_problems, many=True).data
         return self.success(data)
+
+
+class ProblemAnswerListAPI(APIView):
+    def get(self, request):
+        problem_id = request.GET.get("problem_id")
+        if not problem_id:
+            return self.error("Invalid parameter, problem_id is required")
+        problem = Problem.objects.get(_id=problem_id)
+        data = ProblemAnswer.objects.select_related("created_by").filter(problem=problem, visible=True)
+        return self.success(ProblemAnswerSerializer(data, many=True).data)
