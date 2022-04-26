@@ -283,3 +283,16 @@ class ProblemAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProblemAnswer
         fields = "__all__"
+
+
+class EditProblemAnswerSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    title = serializers.CharField(max_length=128, required=False)
+    content = serializers.CharField(required=False, allow_blank=True)
+    visible = serializers.BooleanField(required=False)
+
+class CreateProblemAnswerSerializer(serializers.Serializer):
+    problem_id = serializers.IntegerField()
+    title = serializers.CharField(max_length=128)
+    content = serializers.CharField()
+    visible = serializers.BooleanField()

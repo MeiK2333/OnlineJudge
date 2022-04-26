@@ -21,13 +21,14 @@ from utils.api import APIView, CSRFExemptAPIView, validate_serializer, APIError
 from utils.constants import Difficulty
 from utils.shortcuts import rand_str, natural_sort_key
 from utils.tasks import delete_files
-from ..models import Problem, ProblemRuleType, ProblemTag
+from ..models import Problem, ProblemRuleType, ProblemTag, ProblemAnswer
 from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
                            CreateProblemSerializer, EditProblemSerializer, EditContestProblemSerializer,
                            ProblemAdminSerializer, TestCaseUploadForm, ContestProblemMakePublicSerializer,
                            AddContestProblemSerializer, ExportProblemSerializer,
                            ExportProblemRequestSerialzier, UploadProblemForm, ImportProblemSerializer,
-                           FPSProblemSerializer)
+                           FPSProblemSerializer, ProblemAnswerSerializer, EditProblemAnswerSerializer,
+                           CreateProblemAnswerSerializer)
 from ..utils import TEMPLATE_BASE, build_problem_template
 
 
@@ -247,7 +248,7 @@ class ProblemAPI(ProblemBase):
         keyword = request.GET.get("keyword", "").strip()
         if keyword:
             problems = problems.filter(Q(title__icontains=keyword) | Q(_id__icontains=keyword))
-        if not user.can_mgmt_all_problem():
+        if not user.can_mgmt_all_problem() and not user.is_secondary_admin():
             problems = problems.filter(created_by=user)
         return self.success(self.paginate_data(request, problems, ProblemAdminSerializer))
 
@@ -703,3 +704,50 @@ class FPSProblemImport(CSRFExemptAPIView):
                 problem_data["test_case_score"] = score
                 self._create_problem(problem_data, request.user)
         return self.success({"import_count": len(problems)})
+
+
+class ProblemAnswerListAPI(APIView):
+
+    @validate_serializer(CreateProblemAnswerSerializer)
+    def post(self, request):
+        data = request.data
+        try:
+            problem = Problem.objects.get(id=data.pop("problem_id"))
+            ensure_created_by(problem, request.user)
+            data["problem"] = problem
+            data["created_by"] = request.user
+        except Problem.DoesNotExist:
+            return self.error("Problem does not exist")
+        problem_answer = ProblemAnswer.objects.create(**data)
+        return self.success(CreateProblemAnswerSerializer(problem_answer).data)
+
+    def delete(self, request):
+        problem_answer_id = request.GET.get("id")
+        if problem_answer_id:
+            if request.user.is_super_admin():
+                ProblemAnswer.objects.filter(id=problem_answer_id).delete()
+        return self.success()
+
+    @validate_serializer(EditProblemAnswerSerializer)
+    def put(self, request):
+        """
+        update problem_answer
+        """
+        data = request.data
+        try:
+            problem_answer = ProblemAnswer.objects.get(id=data.pop("id"))
+            ensure_created_by(problem_answer, request.user)
+        except ProblemAnswer.DoesNotExist:
+            return self.error("Problem answer does not exist")
+        for k, v in data.items():
+            setattr(problem_answer, k, v)
+        problem_answer.save()
+        return self.success()
+
+    def get(self, request):
+        problem_id = request.GET.get("problem_id")
+        if not problem_id:
+            return self.error("Invalid parameter, problem_id is required")
+        problem = Problem.objects.get(id=problem_id)
+        data = ProblemAnswer.objects.select_related("created_by").filter(problem=problem)
+        return self.success(ProblemAnswerSerializer(data, many=True).data)
