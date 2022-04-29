@@ -1,5 +1,7 @@
 import random
 from django.db.models import Q, Count
+
+from account.models import AdminType
 from utils.api import APIView
 from account.decorators import check_contest_permission
 from ..models import ProblemTag, Problem, ProblemRuleType, ProblemAnswer
@@ -125,6 +127,8 @@ class ProblemAnswerListAPI(APIView):
         problem_id = request.GET.get("problem_id")
         if not problem_id:
             return self.error("Invalid parameter, problem_id is required")
+        if request.user.admin_type == AdminType.REGULAR_USER and request.user.can_read_answer is False:
+            return self.error("您无权查看题解")
         problem = Problem.objects.get(_id=problem_id)
         data = ProblemAnswer.objects.select_related("created_by").filter(problem=problem, visible=True)
         return self.success(ProblemAnswerSerializer(data, many=True).data)

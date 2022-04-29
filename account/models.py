@@ -54,6 +54,8 @@ class User(AbstractBaseUser):
 
     # 是否允许导出题目数据
     can_export = models.BooleanField(default=False)
+    # 是否允许查看题解
+    can_read_answer = models.BooleanField(default=True)
 
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []

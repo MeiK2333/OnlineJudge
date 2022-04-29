@@ -77,6 +77,7 @@ class UserAdminAPI(APIView):
         user.invalid_date = data["invalid_date"]
         user.create_user_number_limit = data["create_user_number_limit"]
         user.can_export = data["can_export"]
+        user.can_read_answer = data["can_read_answer"]
 
         if data["admin_type"] == AdminType.ADMIN:
             user.problem_permission = data["problem_permission"]

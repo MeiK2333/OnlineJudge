@@ -54,7 +54,7 @@ class UserAdminSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "email", "admin_type", "problem_permission", "real_name",
                   "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "invalid_date",
-                  "create_user_number", "create_user_number_limit", "can_export"]
+                  "create_user_number", "create_user_number_limit", "can_export", "can_read_answer"]
 
     def get_real_name(self, obj):
         return obj.userprofile.real_name
@@ -65,7 +65,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "username", "email", "admin_type", "problem_permission",
                   "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "invalid_date",
-                  "create_user_number", "create_user_number_limit", "can_export"]
+                  "create_user_number", "create_user_number_limit", "can_export", "can_read_answer"]
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -101,6 +101,7 @@ class EditUserSerializer(serializers.Serializer):
     create_user_number = serializers.IntegerField()
     create_user_number_limit = serializers.IntegerField()
     can_export = serializers.BooleanField()
+    can_read_answer = serializers.BooleanField()
 
 
 class EditUserProfileSerializer(serializers.Serializer):
