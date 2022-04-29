@@ -16,3 +16,17 @@ class Announcement(models.Model):
     class Meta:
         db_table = "announcement"
         ordering = ("-create_time",)
+
+
+class Carousel(models.Model):
+    title = models.TextField()
+    file_path = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    create_time = models.DateTimeField(auto_now_add=True)
+    visible = models.BooleanField(default=True)
+    # 轮播图自定义播放顺序，大的在前面
+    order = models.IntegerField()
+
+    class Meta:
+        db_table = "carousel"
+        ordering = ("-order",)

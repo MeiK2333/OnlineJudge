@@ -1,9 +1,10 @@
 from account.decorators import super_admin_required, super_admin_or_secondary_required
 from utils.api import APIView, validate_serializer
 
-from announcement.models import Announcement
+from announcement.models import Announcement, Carousel
 from announcement.serializers import (AnnouncementSerializer, CreateAnnouncementSerializer,
-                                      EditAnnouncementSerializer)
+                                      EditAnnouncementSerializer, CarouselSerializer, CreateCarouselSerializer,
+                                      EditCarouselSerializer)
 
 
 class AnnouncementAdminAPI(APIView):
@@ -59,4 +60,46 @@ class AnnouncementAdminAPI(APIView):
     def delete(self, request):
         if request.GET.get("id"):
             Announcement.objects.filter(id=request.GET["id"]).delete()
+        return self.success()
+
+class CarouselAdminAPI(APIView):
+    @validate_serializer(CreateCarouselSerializer)
+    @super_admin_required
+    def post(self, request):
+        data = request.data
+        carousel = Carousel.objects.create(title=data["title"], visible=data["visible"], order=data["order"],
+                                           file_path=data["file_path"], created_by=request.user)
+        return self.success(CarouselSerializer(carousel).data)
+
+    @validate_serializer(EditCarouselSerializer)
+    @super_admin_required
+    def put(self, request):
+        data = request.data
+        try:
+            carousel = Carousel.objects.get(id=data.pop("id"))
+        except Carousel.DoesNotExist:
+            return self.error("Announcement does not exist")
+
+        for k, v in data.items():
+            setattr(carousel, k, v)
+        carousel.save()
+
+        return self.success(CarouselSerializer(carousel).data)
+
+    @super_admin_required
+    def get(self, request):
+        carousel_id = request.GET.get("id")
+        if carousel_id:
+            try:
+                carousel = Carousel.objects.get(id=carousel_id)
+                return self.success(CarouselSerializer(carousel).data)
+            except Carousel.DoesNotExist:
+                return self.error("Carousel does not exist")
+
+        carousels = Carousel.objects.all().order_by("-order")
+        return self.success(CarouselSerializer(carousels, many=True).data)
+
+    @super_admin_required
+    def delete(self, request):
+        Carousel.objects.filter(id=request.GET["id"]).delete()
         return self.success()
