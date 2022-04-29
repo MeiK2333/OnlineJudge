@@ -52,6 +52,9 @@ class User(AbstractBaseUser):
     create_user_number = models.IntegerField(default=0)
     create_user_number_limit = models.IntegerField(default=0)
 
+    # 是否允许导出题目数据
+    can_export = models.BooleanField(default=False)
+
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
 
