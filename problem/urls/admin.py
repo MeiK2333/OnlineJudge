@@ -2,9 +2,10 @@ from django.conf.urls import url
 
 from ..views.admin import (ContestProblemAPI, ProblemAPI, TestCaseAPI, MakeContestProblemPublicAPIView,
                            CompileSPJAPI, AddContestProblemAPI, ExportProblemAPI, ImportProblemAPI,
-                           FPSProblemImport, ProblemAnswerListAPI)
+                           FPSProblemImport, ProblemAnswerListAPI, ProblemTagAdminAPI)
 
 urlpatterns = [
+    url(r"^problem/tags/?$", ProblemTagAdminAPI.as_view(), name="problem_tag_list_api"),
     url(r"^test_case/?$", TestCaseAPI.as_view(), name="test_case_api"),
     url(r"^compile_spj/?$", CompileSPJAPI.as_view(), name="compile_spj"),
     url(r"^problem/?$", ProblemAPI.as_view(), name="problem_admin_api"),

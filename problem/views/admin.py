@@ -8,10 +8,11 @@ from wsgiref.util import FileWrapper
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import StreamingHttpResponse, FileResponse
 
-from account.decorators import problem_permission_required, ensure_created_by, problem_delete_permission_required
+from account.decorators import problem_permission_required, ensure_created_by, problem_delete_permission_required, \
+    super_admin_required
 from contest.models import Contest, ContestStatus
 from fps.parser import FPSHelper, FPSParser
 from judge.dispatcher import SPJCompiler
@@ -28,7 +29,7 @@ from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
                            AddContestProblemSerializer, ExportProblemSerializer,
                            ExportProblemRequestSerialzier, UploadProblemForm, ImportProblemSerializer,
                            FPSProblemSerializer, ProblemAnswerSerializer, EditProblemAnswerSerializer,
-                           CreateProblemAnswerSerializer)
+                           CreateProblemAnswerSerializer, TagSerializer, CreateTagSerializer, EditTagSerializer)
 from ..utils import TEMPLATE_BASE, build_problem_template
 
 
@@ -751,3 +752,42 @@ class ProblemAnswerListAPI(APIView):
         problem = Problem.objects.get(id=problem_id)
         data = ProblemAnswer.objects.select_related("created_by").filter(problem=problem)
         return self.success(ProblemAnswerSerializer(data, many=True).data)
+
+
+class ProblemTagAdminAPI(APIView):
+    @super_admin_required
+    def get(self, request):
+        tags = ProblemTag.objects.annotate(problem_count=Count("problem")).filter().order_by("-order", "-problem_count")
+        return self.success(TagSerializer(tags, many=True).data)
+
+    @super_admin_required
+    def delete(self, request):
+        tag_id = request.GET.get("id")
+        if tag_id:
+            ProblemTag.objects.filter(id=tag_id).delete()
+        return self.success()
+
+    @super_admin_required
+    @validate_serializer(CreateTagSerializer)
+    def post(self, request):
+        data = request.data
+        name = data["name"]
+        order = data.get("order", 0)
+        if name:
+            cnt = ProblemTag.objects.filter(name=name).count()
+            if cnt > 0:
+                return self.error("标签已存在")
+        tag = ProblemTag.objects.create(name=data["name"], order=order)
+        return self.success(CreateTagSerializer(tag).data)
+
+    def put(self, request):
+        data = request.data
+        for item in data:
+            s = EditTagSerializer(data=item)
+            if s.is_valid() is False:
+                return self.error(self.invalid_serializer(s))
+            tag = ProblemTag.objects.get(id=item["id"])
+            tag.order = item["order"]
+            tag.name = item["name"]
+            tag.save()
+        return self.success()

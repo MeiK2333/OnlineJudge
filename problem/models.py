@@ -9,9 +9,11 @@ from utils.constants import Choices
 
 class ProblemTag(models.Model):
     name = models.TextField()
+    order = models.IntegerField(default=0)
 
     class Meta:
         db_table = "problem_tag"
+        ordering = ("-order",)
 
 
 class ProblemRuleType(Choices):

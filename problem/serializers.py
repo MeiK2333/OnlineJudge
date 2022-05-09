@@ -296,3 +296,12 @@ class CreateProblemAnswerSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=128)
     content = serializers.CharField()
     visible = serializers.BooleanField()
+
+class EditTagSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField(max_length=128)
+    order = serializers.IntegerField()
+
+class CreateTagSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=128)
+    order = serializers.IntegerField()
