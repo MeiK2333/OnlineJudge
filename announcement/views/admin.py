@@ -1,10 +1,10 @@
 from account.decorators import super_admin_required, super_admin_or_secondary_required
-from utils.api import APIView, validate_serializer
-
-from announcement.models import Announcement, Carousel
+from announcement.models import Announcement, Carousel, FriendshipLinks
 from announcement.serializers import (AnnouncementSerializer, CreateAnnouncementSerializer,
                                       EditAnnouncementSerializer, CarouselSerializer, CreateCarouselSerializer,
-                                      EditCarouselSerializer)
+                                      EditCarouselSerializer, CreateFriendshipLinksSerializer,
+                                      EditFriendshipLinksSerializer, FriendshipLinksSerializer)
+from utils.api import APIView, validate_serializer
 
 
 class AnnouncementAdminAPI(APIView):
@@ -102,4 +102,48 @@ class CarouselAdminAPI(APIView):
     @super_admin_required
     def delete(self, request):
         Carousel.objects.filter(id=request.GET["id"]).delete()
+        return self.success()
+
+
+class FriendshipLinksAdminAPI(APIView):
+    @validate_serializer(CreateFriendshipLinksSerializer)
+    @super_admin_required
+    def post(self, request):
+        data = request.data
+        friendship_links = FriendshipLinks.objects.create(title=data["title"], visible=data["visible"],
+                                                          order=data["order"],
+                                                          link=data["link"], created_by=request.user)
+        return self.success(FriendshipLinksSerializer(friendship_links).data)
+
+    @validate_serializer(EditFriendshipLinksSerializer)
+    @super_admin_required
+    def put(self, request):
+        data = request.data
+        try:
+            friendship_links = FriendshipLinks.objects.get(id=data.pop("id"))
+        except FriendshipLinks.DoesNotExist:
+            return self.error("Announcement does not exist")
+
+        for k, v in data.items():
+            setattr(friendship_links, k, v)
+        friendship_links.save()
+
+        return self.success(FriendshipLinksSerializer(friendship_links).data)
+
+    @super_admin_required
+    def get(self, request):
+        friendship_links_id = request.GET.get("id")
+        if friendship_links_id:
+            try:
+                friendship_links = FriendshipLinks.objects.get(id=friendship_links_id)
+                return self.success(FriendshipLinksSerializer(friendship_links).data)
+            except FriendshipLinks.DoesNotExist:
+                return self.error("Carousel does not exist")
+
+        friendship_links = FriendshipLinks.objects.all().order_by("-order")
+        return self.success(FriendshipLinksSerializer(friendship_links, many=True).data)
+
+    @super_admin_required
+    def delete(self, request):
+        FriendshipLinks.objects.filter(id=request.GET["id"]).delete()
         return self.success()

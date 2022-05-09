@@ -1,7 +1,7 @@
 from utils.api import APIView
 
-from announcement.models import Announcement, Carousel
-from announcement.serializers import AnnouncementSerializer, CarouselSerializer
+from announcement.models import Announcement, Carousel, FriendshipLinks
+from announcement.serializers import AnnouncementSerializer, CarouselSerializer, FriendshipLinksSerializer
 from django.db.models import Q
 
 
@@ -17,3 +17,9 @@ class CarouselAPI(APIView):
     def get(self, request):
         carousels = Carousel.objects.filter(visible=True)
         return self.success(CarouselSerializer(carousels, many=True).data)
+
+
+class FriendshipLinksAPI(APIView):
+    def get(self, request):
+        friendship_links = FriendshipLinks.objects.filter(visible=True)
+        return self.success(FriendshipLinksSerializer(friendship_links, many=True).data)

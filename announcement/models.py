@@ -30,3 +30,17 @@ class Carousel(models.Model):
     class Meta:
         db_table = "carousel"
         ordering = ("-order",)
+
+
+class FriendshipLinks(models.Model):
+    """ 友情链接 """
+    title = models.TextField()
+    link = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    create_time = models.DateTimeField(auto_now_add=True)
+    visible = models.BooleanField(default=True)
+    order = models.IntegerField()
+
+    class Meta:
+        db_table = "friendship_links"
+        ordering = ("-order",)
