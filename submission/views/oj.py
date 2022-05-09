@@ -50,6 +50,7 @@ class SubmissionAPI(APIView):
     def post(self, request):
         data = request.data
         hide_id = False
+        contest = None
         if data.get("contest_id"):
             error = self.check_contest_permission(request)
             if error:
@@ -69,6 +70,15 @@ class SubmissionAPI(APIView):
             problem = Problem.objects.get(id=data["problem_id"], contest_id=data.get("contest_id"), visible=True)
         except Problem.DoesNotExist:
             return self.error("Problem not exist")
+
+        if contest is not None:
+            # 判断是否超过提交上限
+            if contest.submit_limit > 0:
+                submit_count = Submission.objects.filter(user_id=request.user.id, problem_id=problem.id,
+                                                         contest_id=data.get("contest_id")).count()
+                if submit_count >= contest.submit_limit:
+                    return self.error(f"提交次数超过比赛设置上限：{submit_count}/{contest.submit_limit}")
+
         if data["language"] not in problem.languages:
             return self.error(f"{data['language']} is now allowed in the problem")
         submission = Submission.objects.create(user_id=request.user.id,

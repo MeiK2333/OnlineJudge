@@ -25,6 +25,9 @@ class Contest(models.Model):
     visible = models.BooleanField(default=True)
     allowed_ip_ranges = JSONField(default=list)
 
+    # 比赛的题目提交次数限制，0 代表无限制（每个题目分别生效）
+    submit_limit = models.IntegerField(default=0)
+
     @property
     def status(self):
         if self.start_time > now():
