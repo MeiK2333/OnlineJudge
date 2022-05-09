@@ -18,7 +18,8 @@ class AnnouncementAdminAPI(APIView):
         announcement = Announcement.objects.create(title=data["title"],
                                                    content=data["content"],
                                                    created_by=request.user,
-                                                   visible=data["visible"])
+                                                   visible=data["visible"],
+                                                   order=data["order"])
         return self.success(AnnouncementSerializer(announcement).data)
 
     @validate_serializer(EditAnnouncementSerializer)
@@ -51,7 +52,7 @@ class AnnouncementAdminAPI(APIView):
                 return self.success(AnnouncementSerializer(announcement).data)
             except Announcement.DoesNotExist:
                 return self.error("Announcement does not exist")
-        announcement = Announcement.objects.all().order_by("-create_time")
+        announcement = Announcement.objects.all()
         if request.GET.get("visible") == "true":
             announcement = announcement.filter(visible=True)
         return self.success(self.paginate_data(request, announcement, AnnouncementSerializer))

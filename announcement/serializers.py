@@ -8,6 +8,7 @@ class CreateAnnouncementSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=64)
     content = serializers.CharField(max_length=1024 * 1024 * 8)
     visible = serializers.BooleanField()
+    order = serializers.IntegerField()
 
 
 class AnnouncementSerializer(serializers.ModelSerializer):
@@ -23,6 +24,7 @@ class EditAnnouncementSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=64)
     content = serializers.CharField(max_length=1024 * 1024 * 8)
     visible = serializers.BooleanField()
+    order = serializers.IntegerField()
 
 
 class CreateCarouselSerializer(serializers.Serializer):
