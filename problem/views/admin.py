@@ -204,6 +204,10 @@ class ProblemAPI(ProblemBase):
     def post(self, request):
         data = request.data
         _id = data["_id"]
+        verify = True
+        if request.user.is_secondary_admin():
+            verify = False
+
         if not _id:
             return self.error("Display ID is required")
         if Problem.objects.filter(_id=_id, contest_id__isnull=True).exists():
@@ -216,7 +220,7 @@ class ProblemAPI(ProblemBase):
         # todo check filename and score info
         tags = data.pop("tags")
         data["created_by"] = request.user
-        problem = Problem.objects.create(**data)
+        problem = Problem.objects.create(**data, verify=verify)
 
         for item in tags:
             try:
@@ -259,6 +263,10 @@ class ProblemAPI(ProblemBase):
         data = request.data
         problem_id = data.pop("id")
 
+        verify = True
+        if request.user.is_secondary_admin():
+            verify = False
+
         try:
             problem = Problem.objects.get(id=problem_id)
             ensure_created_by(problem, request.user)
@@ -280,6 +288,7 @@ class ProblemAPI(ProblemBase):
 
         for k, v in data.items():
             setattr(problem, k, v)
+        problem.verify = verify
         problem.save()
 
         problem.tags.remove(*problem.tags.all())
@@ -712,6 +721,10 @@ class ProblemAnswerListAPI(APIView):
     @validate_serializer(CreateProblemAnswerSerializer)
     def post(self, request):
         data = request.data
+        verify = True
+        if request.user.is_secondary_admin():
+            verify = False
+
         try:
             problem = Problem.objects.get(id=data.pop("problem_id"))
             ensure_created_by(problem, request.user)
@@ -719,7 +732,7 @@ class ProblemAnswerListAPI(APIView):
             data["created_by"] = request.user
         except Problem.DoesNotExist:
             return self.error("Problem does not exist")
-        problem_answer = ProblemAnswer.objects.create(**data)
+        problem_answer = ProblemAnswer.objects.create(**data, verify=verify)
         return self.success(CreateProblemAnswerSerializer(problem_answer).data)
 
     def delete(self, request):
@@ -735,6 +748,10 @@ class ProblemAnswerListAPI(APIView):
         update problem_answer
         """
         data = request.data
+        verify = True
+        if request.user.is_secondary_admin():
+            verify = False
+
         try:
             problem_answer = ProblemAnswer.objects.get(id=data.pop("id"))
             ensure_created_by(problem_answer, request.user)
@@ -742,6 +759,7 @@ class ProblemAnswerListAPI(APIView):
             return self.error("Problem answer does not exist")
         for k, v in data.items():
             setattr(problem_answer, k, v)
+        problem_answer.verify = verify
         problem_answer.save()
         return self.success()
 

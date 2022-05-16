@@ -155,9 +155,9 @@ def check_contest_permission(check_type="details"):
 
 def ensure_created_by(obj, user):
     e = APIError(msg=f"{obj.__class__.__name__} does not exist")
-    if not user.is_admin_role():
+    if not user.is_admin_role() and not user.is_secondary_admin():
         raise e
-    if user.is_super_admin():
+    if user.is_super_admin() or user.is_secondary_admin():
         return
     if isinstance(obj, Problem):
         if not user.can_mgmt_all_problem() and obj.created_by != user:

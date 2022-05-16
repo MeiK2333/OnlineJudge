@@ -84,6 +84,8 @@ class Problem(models.Model):
     statistic_info = JSONField(default=dict)
     share_submission = models.BooleanField(default=False)
 
+    verify = models.BooleanField(default=True)
+
     class Meta:
         db_table = "problem"
         unique_together = (("_id", "contest"),)
@@ -105,6 +107,9 @@ class ProblemAnswer(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     visible = models.BooleanField(default=True)
     create_time = models.DateTimeField(auto_now_add=True)
+
+    # 是否经过审核
+    verify = models.BooleanField(default=True)
 
     class Meta:
         db_table = "problem_answer"

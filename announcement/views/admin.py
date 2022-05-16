@@ -15,14 +15,17 @@ class AnnouncementAdminAPI(APIView):
         publish announcement
         """
         data = request.data
+        verify = True
+        if request.user.is_secondary_admin():
+            verify = False
         announcement = Announcement.objects.create(title=data["title"],
                                                    content=data["content"],
                                                    created_by=request.user,
                                                    visible=data["visible"],
-                                                   order=data["order"])
+                                                   order=data["order"],
+                                                   verify=verify)
         return self.success(AnnouncementSerializer(announcement).data)
 
-    @validate_serializer(EditAnnouncementSerializer)
     @super_admin_required
     def put(self, request):
         """

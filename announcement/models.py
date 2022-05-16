@@ -14,6 +14,8 @@ class Announcement(models.Model):
     visible = models.BooleanField(default=True)
     order = models.IntegerField(default=0)
 
+    verify = models.BooleanField(default=True)
+
     class Meta:
         db_table = "announcement"
         ordering = ("-order", "-create_time",)
@@ -27,6 +29,8 @@ class Carousel(models.Model):
     visible = models.BooleanField(default=True)
     # 轮播图自定义播放顺序，大的在前面
     order = models.IntegerField()
+
+    verify = models.BooleanField(default=True)
 
     class Meta:
         db_table = "carousel"

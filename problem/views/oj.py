@@ -130,5 +130,5 @@ class ProblemAnswerListAPI(APIView):
         if request.user.admin_type == AdminType.REGULAR_USER and request.user.can_read_answer is False:
             return self.error("您无权查看题解")
         problem = Problem.objects.get(_id=problem_id)
-        data = ProblemAnswer.objects.select_related("created_by").filter(problem=problem, visible=True)
+        data = ProblemAnswer.objects.select_related("created_by").filter(problem=problem, visible=True, verify=True)
         return self.success(ProblemAnswerSerializer(data, many=True).data)
