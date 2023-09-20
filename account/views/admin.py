@@ -84,7 +84,7 @@ class UserAdminAPI(APIView):
         elif data["admin_type"] == AdminType.SUPER_ADMIN:
             user.problem_permission = ProblemPermission.ALL
         elif data["admin_type"] == AdminType.SECONDARY_USER:
-            user.problem_permission = ProblemPermission.UPDATE_ONLY
+            user.problem_permission = data["problem_permission"]
         else:
             user.problem_permission = ProblemPermission.NONE
 
